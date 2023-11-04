@@ -1,6 +1,5 @@
 from enum import Enum
 
-from src.models import Client, File
 
 SERVER_VERSION = '3'
 
@@ -40,14 +39,16 @@ DB_CONFIG = {
         "get_client": f"SELECT * FROM {CLIENTS_TABLE} WHERE name=:name",
         "add_client": f"INSERT INTO {CLIENTS_TABLE} (ID, name, PublicKey, LastSeen, AESKey) VALUES (:id, :name, :public_key, :last_seen, :aes_key)",
         "fetch_init": f"SELECT * FROM {CLIENTS_TABLE}",
-        "data_class": Client
+        "get_client_aes": f"SELECT AESKey FROM {CLIENTS_TABLE} WHERE ID=:id",
+        "update_public_aes": f"UPDATE {CLIENTS_TABLE} SET PublicKey=:public_key, AESKey=:aes_key WHERE ID=:id",
+        "data_class": "Client"
     },
     FILES_TABLE: {
-        "create_command": f"CREATE TABLE IF NOT EXISTS {FILES_TABLE} (ID BLOB({CLIENT_ID_SIZE}) NOT NULL, Filename TEXT(255) NOT NULL, Pathname TEXT(255) NOT NULL, Verified BOOLEAN NOT NULL, FOREIGN KEY(ID) REFERENCES clients(ID))",
+        "create_command": f"CREATE TABLE IF NOT EXISTS {FILES_TABLE} (ID BLOB({CLIENT_ID_SIZE}) NOT NULL, Filename TEXT(255) NOT NULL, Pathname TEXT(255) NOT NULL, Verified BOOLEAN NOT NULL, FOREIGN KEY(ID) REFERENCES clients(ID), UNIQUE(ID, Filename))",
         "fetch_init": f"SELECT * FROM {FILES_TABLE}",
         "add_file": f"INSERT INTO {FILES_TABLE} (ID, Filename, Pathname, Verified) VALUES (:id, :file_name, :path_name, :verified)",
         "modify_file_verified": f"UPDATE {FILES_TABLE} SET Verified=:verified WHERE ID=:id AND FileName=:file_name",
-        "data_class": File
+        "data_class": "File"
     }
 }
 

@@ -1,62 +1,26 @@
+import logging
 import os
 import uuid
-from dataclasses import dataclass
 import struct
 from datetime import datetime
 from const import SERVER_VERSION, RequestCodes, ResponseCodes, \
     CLIENTS_NAME_SIZE, CLIENTS_AES_KEY_SIZE, FILES_STORAGE_FOLDER
-from src.db_handler import DatabaseHandler
+from custom_exceptions import ClientDisconnectedError
+from db_handler import DatabaseHandler
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP, AES
+from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Random import get_random_bytes
-from src.crc32 import readfile as readfile_crc32
-from src.file_handler import FileHandler
-from src.models import Client, File
-from test import decrypt_aes_cbc
+from crypto import readfile as readfile_crc32, decrypt_aes_cbc
+from file_handler import FileHandler
+from models import Client, File, Request, Response
+from base_protocol import BaseProtocol
 
 
-@dataclass
-class Request:
-    client_id: bytes
-    version: str
-    code: RequestCodes
-    payload_size: int
-    payload: bytes
-
-
-@dataclass
-class Response:
-    version: str
-    code: ResponseCodes
-    payload: bytes
-
-    @property
-    def payload_size(self):
-        return len(self.payload)
-
-    def to_bytes(self):
-        """Convert the response details to a byte sequence
-        based on the specified structure."""
-        version_bytes = self.version.encode('utf-8')
-        code_bytes = self.code.value.to_bytes(2, byteorder='big')
-        payload_size_bytes = self.payload_size.to_bytes(4, byteorder='big')
-        return version_bytes + code_bytes + payload_size_bytes + self.payload
-
-
-class ProtocolHandler:
-    def __init__(self, db_handler: DatabaseHandler):
+class ProtocolHandler(BaseProtocol):
+    def __init__(self, db_handler: DatabaseHandler, logger: logging.Logger):
+        super().__init__(logger=logger)
         self.SERVER_VERSION = SERVER_VERSION
         self.db_handler = db_handler
-        # Mapping request codes to their respective handler methods
-        self.request_handlers = {
-            RequestCodes.REGISTRATION: self._handle_registration,
-            RequestCodes.SEND_PUBLIC_KEY: self._handle_public_key,
-            RequestCodes.RECONNECT: self._handle_reconnect,
-            RequestCodes.SEND_FILE: self._handle_file_transfer,
-            RequestCodes.CRC_CORRECT: self._handle_message_received_approval,
-            RequestCodes.CRC_INCORRECT_RESEND: self._handle_crc_invalid_resend,
-            RequestCodes.CRC_INCORRECT_DONE: self._handle_message_received_approval,
-        }
 
     def handle_request(self, client_socket):
         # The format string for struct.unpack:
@@ -64,10 +28,15 @@ class ProtocolHandler:
         # - B: version is a 1-byte unsigned char
         # - H: code is a 2-byte unsigned short
         # - I: payload_size is a 4-byte unsigned int
-        # Assuming the total size of the struct is (16 + 1 + 2 + 4 = 23 bytes) without the payload.
+        # Assuming the total size of the struct is
+        # (16 + 1 + 2 + 4 = 23 bytes) without the payload.
         format_string = "16sBHI"
         size_without_payload = struct.calcsize(format_string)
         data = client_socket.recv(size_without_payload)
+
+        # The client has disconnected, raise an error
+        if data == b'':
+            raise ClientDisconnectedError("Client has disconnected.")
 
         # Unpack the data
         client_id_bytes, version_byte, code, payload_size = struct.unpack(
@@ -83,11 +52,13 @@ class ProtocolHandler:
         request = Request(client_id, version, code,
                           payload_size, payload)
 
-        # Dispatch to the appropriate handler or send a general error response
+        # Trigger handler based on request code + wrap with logger:
         handler = self.request_handlers.get(request.code,
                                             self._send_general_error)
+        handler = self.log_decorator(handler)
         handler(client_socket, request)
 
+    @BaseProtocol.register_request(RequestCodes.REGISTRATION)
     def _handle_registration(self, client_socket, request: Request):
         # Extracting request details
         client_name = request.payload.decode('utf-8').strip('\x00').strip()
@@ -114,6 +85,7 @@ class ProtocolHandler:
         bytes_res = response.to_bytes()
         client_socket.sendall(bytes_res)
 
+    @BaseProtocol.register_request(RequestCodes.RECONNECT)
     def _handle_reconnect(self, client_socket, request: Request):
         # Extracting request details
         client_name = request.payload.decode('utf-8').strip('\x00').strip()
@@ -139,25 +111,27 @@ class ProtocolHandler:
                             combined_payload)
         client_socket.sendall(response.to_bytes())
 
-    def _handle_public_key(self, client_socket, request_details: Request):
+    @BaseProtocol.register_request(RequestCodes.SEND_PUBLIC_KEY)
+    def _handle_public_key(self, client_socket, request: Request):
         # Assuming the payload is structured as username|public_key
         # Extracting the username and public key
-        client_name = request_details.payload[
-                      :CLIENTS_NAME_SIZE].decode().strip('\x00')
-        public_key_pem = request_details.payload[CLIENTS_NAME_SIZE:]
+        client_name = request.payload[:CLIENTS_NAME_SIZE].decode().strip(
+            '\x00')
+        public_key_pem = request.payload[CLIENTS_NAME_SIZE:]
 
         # Generate an AES key for the client
         aes_key = get_random_bytes(CLIENTS_AES_KEY_SIZE)  # AES-128 key
 
         # Update public key and AES key in the database
         self.db_handler.update_public_key_and_aes_key(
-            client_name, public_key_pem, aes_key)
+            client_id=request.client_id, aes_key=aes_key,
+            public_key=public_key_pem)
 
         # Encrypt the AES key using the client's public key
         public_key = RSA.import_key(public_key_pem)
         cipher_rsa = PKCS1_OAEP.new(public_key)
         encrypted_aes_key = cipher_rsa.encrypt(aes_key)
-        combined_payload = request_details.client_id + encrypted_aes_key
+        combined_payload = request.client_id + encrypted_aes_key
 
         # Construct the response
         response = Response(self.SERVER_VERSION,
@@ -165,6 +139,7 @@ class ProtocolHandler:
                             combined_payload)
         client_socket.sendall(response.to_bytes())
 
+    @BaseProtocol.register_request(RequestCodes.SEND_FILE)
     def _handle_file_transfer(self, client_socket, request_details: Request):
         # Retrieve the AES key for this client from the database
         aes_key = self.db_handler.get_aes_key_for_client(
@@ -188,6 +163,7 @@ class ProtocolHandler:
                     path_name=os.path.join(FILES_STORAGE_FOLDER, file_name),
                     verified=False)
         FileHandler(filepath=file.path_name).write_value(decrypted_file)
+        # This will append the file to DB if user-file doesn't exist yet:
         self.db_handler.add_file(file=file)
 
         # Calculate the CRC checksum for the decrypted file
@@ -206,6 +182,7 @@ class ProtocolHandler:
                             response_payload)
         client_socket.sendall(response.to_bytes())
 
+    @BaseProtocol.register_request(RequestCodes.CRC_CORRECT)
     def _handle_message_received_approval(self, client_socket,
                                           request: Request):
         # Update verified field to True:
@@ -218,10 +195,12 @@ class ProtocolHandler:
                             payload=request.client_id)
         client_socket.sendall(response.to_bytes())
 
+    @BaseProtocol.register_request(RequestCodes.CRC_INCORRECT_RESEND)
     def _handle_crc_invalid_resend(self, client_socket, request: Request):
         print(f"Received MSG with code - {request.code}")
         pass
 
+    @BaseProtocol.register_request(RequestCodes.CRC_INCORRECT_DONE)
     def _send_general_error(self, client_socket, request: Request):
         response = Response(self.SERVER_VERSION, ResponseCodes.GENERAL_ERROR,
                             b"General server exception or invalid "

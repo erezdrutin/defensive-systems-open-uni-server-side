@@ -1,10 +1,16 @@
 """
-This module implements the cksum command found in most UNIXes in pure
-python.
-
-The constants and routine are cribbed from the POSIX man page
+Authors: Open Uni + Erez Drutin.
+Date: 02.11.2023
+Purpose: This module implements the cksum command found in most UNIXes in pure
+python. The constants and routine are cribbed from the POSIX man page. I
+added the method decrypt_aes_cbc for easy parsing and handling of AES
+decryption that we could utilize as we parse the different clients requests.
 """
+
 import sys
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import unpad
+import binascii
 
 crctab = [0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc,
           0x17c56b6b, 0x1a864db2, 0x1e475005, 0x2608edb8, 0x22c9f00f,
@@ -89,5 +95,20 @@ def readfile(fname):
         exit(-1)
 
 
-if __name__ == '__main__':
-    print(readfile(sys.argv[-1]))
+def decrypt_aes_cbc(encrypted_hex, key_bytes):
+    # Convert hex to bytes for the encrypted message
+    encrypted_bytes = binascii.unhexlify(encrypted_hex)
+
+    # Extract IV and ciphertext
+    iv = encrypted_bytes[:16]
+    ciphertext = encrypted_bytes[16:]
+
+    # Decrypt using AES CBC
+    cipher = AES.new(key_bytes, AES.MODE_CBC, iv)
+    decrypted_bytes = unpad(cipher.decrypt(ciphertext), AES.block_size)
+
+    return decrypted_bytes
+
+#
+# if __name__ == '__main__':
+#     print(readfile(sys.argv[-1]))

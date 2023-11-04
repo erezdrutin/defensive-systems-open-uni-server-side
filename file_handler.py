@@ -61,12 +61,23 @@ class FileHandler:
 
     def write_value(self, value: Any) -> bool:
         """
+        Writes the received value to self.filepath. If the received value is
+        of type bytes, we will use "wb" to write binary. Otherwise, we will
+        use "w" with "utf-8" encoding.
+        @param value: A value to write to self.filepath.
+        @return: True if succeeded, False if not.
+        """
+        """
         Write a single value (e.g., port) to the specified file.
         """
         try:
             self._validate_dir()
-            with open(self.filepath, 'w') as file:
-                file.write(str(value))
+            if isinstance(value, bytes):
+                with open(self.filepath, 'wb') as file:
+                    file.write(value)
+            else:
+                with open(self.filepath, 'w', encoding='utf-8') as file:
+                    file.write(str(value))
             return True
         except OSError as e:
             print(f"Error writing to {self.filepath}: {e}")
