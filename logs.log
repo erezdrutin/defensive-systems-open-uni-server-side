@@ -1,0 +1,45 @@
+2023-11-04 18:43:18,655 - main - INFO - Server started on port 8080. Waiting for connections...
+2023-11-04 18:44:02,248 - main - WARNING - Accepted connection from ('127.0.0.1', 62914)
+2023-11-04 18:44:02,248 - main - INFO - Received request code: RequestCodes.REGISTRATION from client ID: b''
+2023-11-04 18:44:02,253 - main - INFO - Finished handling request code: RequestCodes.REGISTRATION from client ID: b''
+2023-11-04 18:44:02,271 - main - INFO - Received request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:44:02,285 - main - INFO - Finished handling request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:44:02,314 - main - INFO - Received request code: RequestCodes.SEND_FILE from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:44:02,351 - main - INFO - Finished handling request code: RequestCodes.SEND_FILE from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:44:02,355 - main - INFO - Received request code: RequestCodes.CRC_CORRECT from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:44:02,358 - main - INFO - Finished handling request code: RequestCodes.CRC_CORRECT from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:44:02,358 - main - WARNING - Client has disconnected.
+2023-11-04 18:44:02,359 - main - WARNING - Connection closed.
+2023-11-04 18:45:19,081 - main - WARNING - Accepted connection from ('127.0.0.1', 62945)
+2023-11-04 18:45:19,081 - main - INFO - Received request code: RequestCodes.RECONNECT from client ID: b''
+2023-11-04 18:45:19,085 - main - INFO - Finished handling request code: RequestCodes.RECONNECT from client ID: b''
+2023-11-04 18:45:19,103 - main - INFO - Received request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:45:19,106 - main - INFO - Finished handling request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:45:19,108 - main - INFO - Received request code: RequestCodes.SEND_FILE from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:45:19,110 - main - INFO - Finished handling request code: RequestCodes.SEND_FILE from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:45:19,110 - main - INFO - Received request code: RequestCodes.CRC_CORRECT from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:45:19,112 - main - INFO - Finished handling request code: RequestCodes.CRC_CORRECT from client ID: b'\xb3g|;\x89\x90Oe\xaa\x0e\xd0a\x1d1=\xf6'
+2023-11-04 18:45:19,113 - main - WARNING - Client has disconnected.
+2023-11-04 18:45:19,113 - main - WARNING - Connection closed.
+2023-11-04 18:46:02,653 - main - WARNING - Accepted connection from ('127.0.0.1', 62956)
+2023-11-04 18:46:02,654 - main - INFO - Received request code: RequestCodes.REGISTRATION from client ID: b''
+2023-11-04 18:46:02,656 - main - INFO - Finished handling request code: RequestCodes.REGISTRATION from client ID: b''
+2023-11-04 18:46:02,669 - main - INFO - Received request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:02,671 - main - INFO - Finished handling request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:02,674 - main - INFO - Received request code: RequestCodes.SEND_FILE from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:02,676 - main - INFO - Finished handling request code: RequestCodes.SEND_FILE from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:02,677 - main - INFO - Received request code: RequestCodes.CRC_CORRECT from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:02,678 - main - INFO - Finished handling request code: RequestCodes.CRC_CORRECT from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:02,679 - main - WARNING - Client has disconnected.
+2023-11-04 18:46:02,679 - main - WARNING - Connection closed.
+2023-11-04 18:46:20,326 - main - WARNING - Accepted connection from ('127.0.0.1', 62969)
+2023-11-04 18:46:20,327 - main - INFO - Received request code: RequestCodes.RECONNECT from client ID: b''
+2023-11-04 18:46:20,330 - main - INFO - Finished handling request code: RequestCodes.RECONNECT from client ID: b''
+2023-11-04 18:46:20,340 - main - INFO - Received request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:20,343 - main - INFO - Finished handling request code: RequestCodes.SEND_PUBLIC_KEY from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:20,345 - main - INFO - Received request code: RequestCodes.SEND_FILE from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:20,347 - main - INFO - Finished handling request code: RequestCodes.SEND_FILE from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:20,347 - main - INFO - Received request code: RequestCodes.CRC_CORRECT from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:20,348 - main - INFO - Finished handling request code: RequestCodes.CRC_CORRECT from client ID: b'zY\xdc\x85j\xabN\x04\x94^\xa2\xedsp\xa2 '
+2023-11-04 18:46:20,349 - main - WARNING - Client has disconnected.
+2023-11-04 18:46:20,349 - main - WARNING - Connection closed.
