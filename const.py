@@ -12,6 +12,10 @@ class RequestCodes(Enum):
     CRC_CORRECT = 1029
     CRC_INCORRECT_RESEND = 1030
     CRC_INCORRECT_DONE = 1031
+    # Not real request codes as request codes are positive integers. These
+    # are mainly for BE purposes as we perform validations on client input:
+    INVALID_VERSION = -1
+    INVALID_CODE = -2
 
 
 class ResponseCodes(Enum):

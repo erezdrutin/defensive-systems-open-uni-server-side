@@ -9,11 +9,12 @@ class FileHandler:
 
     def _validate_dir(self):
         """
-        Ensures that the directory of the specified filepath exists. If not,
-        attempts to create it. This will only attempt to create the "last"
-        folder in the filepath. This means that for "files/filename.txt"
-        it'll create files, but for "X/files/filename.txt" it'll not create
-        X, as we're only creating the "last" part of the path.
+        Ensures that the dir path in which the file is expected to exist is
+        valid. If not, attempts to create it. This will attempt to
+        "recursively build the paths", in the sense that if we pass
+        "X/files/file.txt", and any of the path parts is not defined (or all of
+        them), then this method will create the necessary directories for
+        it, meaning that both "X" and "X/files" will be created.
         """
         directory = os.path.dirname(self.filepath)
         if directory and not os.path.exists(directory):

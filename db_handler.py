@@ -246,12 +246,12 @@ class DatabaseHandler:
 #     db_handler.insert_data("files", file)
 
 
-db_handler = DatabaseHandler('defensive.db', config=DB_CONFIG,
-                             logger=logging.getLogger("main"))
-files = db_handler.perform_query('SELECT * from files')
-clients = db_handler.perform_query('SELECT * from clients')
-print("files: ", files)
-print("clients: ", clients)
+# db_handler = DatabaseHandler('defensive.db', config=DB_CONFIG,
+#                              logger=logging.getLogger("main"))
+# files = db_handler.perform_query('SELECT * from files')
+# clients = db_handler.perform_query('SELECT * from clients')
+# print("files: ", files)
+# print("clients: ", clients)
 #
 # print(db_handler.perform_query('SELECT ID, COUNT(*) FROM clients GROUP BY ID'))
 
