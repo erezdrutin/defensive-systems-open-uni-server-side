@@ -1,3 +1,12 @@
+"""
+Author: Erez Drutin
+Date: 04.11.2023
+Purpose: A file populated with models that will be used throughout the
+entire code-base. Normally this would be separated into files and directories
+based on functionality. However, in this case this seemed "excessive"
+compared to the requirements as is.
+"""
+
 from dataclasses import dataclass
 from typing import List
 from datetime import datetime
@@ -46,9 +55,12 @@ class Response:
     def payload_size(self):
         return len(self.payload)
 
-    def to_bytes(self):
-        """Convert the response details to a byte sequence
-        based on the specified structure."""
+    def to_bytes(self) -> bytes:
+        """
+        Converts the response details dataclass into a byte sequence which
+        will in turn be sent to the Client.
+        @return: A bytes sequence.
+        """
         version_bytes = self.version.encode('utf-8')
         code_bytes = self.code.value.to_bytes(2, byteorder='big')
         payload_size_bytes = self.payload_size.to_bytes(4, byteorder='big')

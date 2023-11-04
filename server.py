@@ -1,13 +1,17 @@
+"""
+Author: Erez Drutin
+Date: 04.11.2023
+Purpose: The
+"""
+
 from __future__ import annotations
 import logging
 import socket
 import threading
 from typing import Dict, Any
-
 from custom_exceptions import ClientDisconnectedError
 from file_handler import FileHandler
 from db_handler import DatabaseHandler
-
 from models import ServerState
 from protocol_handler import ProtocolHandler
 
@@ -23,14 +27,20 @@ class Server:
         self.protocol: ProtocolHandler = protocol
         self.logger = logger
 
-    def _handle_client(self, client_socket):
+    def _handle_client(self, client_socket: socket.socket) -> None:
+        """
+        Handles communication with a single client until we either receive
+        an error or the client disconnects.
+        @param client_socket: A socket to read messages from.
+        @return:
+        """
         """
         This function handles communication with a single client.
         It processes multiple requests until the client disconnects.
         """
         try:
             while True:
-                # Continuously handle requests
+                # For each new message in the socket, trigger handle_request:
                 self.protocol.handle_request(client_socket)
         except ClientDisconnectedError as err:
             self.logger.warning(str(err))
@@ -41,12 +51,21 @@ class Server:
             # Handle or log other exceptions
             self.logger.error(f"Error while handling client: {e}")
         finally:
+            # Close the socket from server-side:
             client_socket.close()
             self.logger.warning(f"Connection closed.")
 
-    def start(self):
+    def start(self) -> None:
+        """
+        Starts the server, allowing it to accept connections on self.port.
+        The binding to 0.0.0.0 binds the server to current hostname. The
+        method sets up the server socket and listens for incoming
+        connections. For each new connection, it logs the event and starts a
+        new thread for client handling. This is an endless method.
+        """
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_socket.bind(('0.0.0.0', self.port))
+        # Queuing up to 5 requests at a time:
         self.server_socket.listen(5)
         self.logger.info(
             f"Server started on port {self.port}. Waiting for connections...")
@@ -59,7 +78,18 @@ class Server:
             client_thread.start()
 
     @staticmethod
-    def init_logger(logger_name: str = "main", log_path: str = "logs.log"):
+    def init_logger(logger_name: str = "main", log_path: str = "logs.log") \
+            -> logging.Logger:
+        """
+        A static method to initialize a logger, so we can use it throughout
+        our server code (or other code-parts in the future if relevant).
+        This is a very basic implementation, in a real-world app the logger
+        would be implemented with a FileRotator and a bit of a more
+        "comprehensive" configuration.
+        @param logger_name: A default name for the logger.
+        @param log_path: A path to store inside logs from the app.
+        @return: A python logger.
+        """
         logging.basicConfig(
             level=logging.INFO,
             format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -70,20 +100,35 @@ class Server:
         return logging.getLogger(logger_name)
 
     @staticmethod
-    def initialize_server(db_config: Dict[str, Dict[str, Any]], db_file: str,
-                          port_path: str) -> Server:
+    def initialize_server(
+            db_config: Dict[str, Dict[str, Any]], db_file: str,
+            port_path: str, client_tbl: str, files_tbl: str) -> Server:
+        """
+        Returns a Server instance. In general, a lot of the data here could
+        be further simplified into "injection" via main (for example,
+        rather than passing paths and consts, we can pass DBHandler,
+        ProtocolHandler, ...), but this feels out of scope for this project.
+        @param db_config: Configuration for the DB to run the server with.
+        @param db_file: A DB file to store results in.
+        @param port_path: A path to the file in which we store port details.
+        @param client_tbl: The table in which we will store "clients".
+        @param files_tbl: The table in which we will store "files".
+        @return: A server instance.
+        """
         logger = Server.init_logger()
         port_config_loader = FileHandler(port_path)
         port = int(port_config_loader.load_value(default_value=1357))
 
-        # Database initialization and table creation
+        # DB initialization & extraction of cached tables data:
         db_handler = DatabaseHandler(db_file=db_file, config=db_config,
-                                     logger=logger)
-
-        cached_db_results = db_handler.initialize_table()
+                                     logger=logger, client_tbl=client_tbl,
+                                     files_tbl=files_tbl)
+        # This will create the tables if not present:
+        cached_db_results = db_handler.cache_tables_data()
+        # Defining a state in which the clients & files will be stored:
         state = ServerState(clients=cached_db_results.get('clients'),
                             files=cached_db_results.get('files'))
-
+        # And a protocol to use in our server:
         protocol = ProtocolHandler(db_handler, logger)
         # Return the initialized server:
         return Server(port, db_handler, state, protocol, logger)

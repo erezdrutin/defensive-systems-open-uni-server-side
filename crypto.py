@@ -7,7 +7,6 @@ added the method decrypt_aes_cbc for easy parsing and handling of AES
 decryption that we could utilize as we parse the different clients requests.
 """
 
-import sys
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 import binascii
@@ -95,7 +94,18 @@ def readfile(fname):
         exit(-1)
 
 
-def decrypt_aes_cbc(encrypted_hex, key_bytes):
+def decrypt_aes_cbc(encrypted_hex: bytes, key_bytes: bytes) -> bytes:
+    """
+    Decrypts a message encrypted with AES in CBC mode.
+    Given an encrypted message and the encryption key, this function
+    decrypts the message using the AES CBC mode. The encrypted message must
+    include the IV as the first 16 bytes of the input.
+    @param encrypted_hex: The encrypted message as a hexadecimal byte
+    string, including the IV at the beginning.
+    @param key_bytes: The key for decryption as a byte string. The size of
+    the key should match the AES variant used (128, 192, or 256 bits).
+    @return: The decrypted message as a byte string.
+    """
     # Convert hex to bytes for the encrypted message
     encrypted_bytes = binascii.unhexlify(encrypted_hex)
 
@@ -108,7 +118,3 @@ def decrypt_aes_cbc(encrypted_hex, key_bytes):
     decrypted_bytes = unpad(cipher.decrypt(ciphertext), AES.block_size)
 
     return decrypted_bytes
-
-#
-# if __name__ == '__main__':
-#     print(readfile(sys.argv[-1]))

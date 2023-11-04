@@ -1,3 +1,20 @@
+"""
+Author: Erez Drutin
+Date: 04.11.2023
+Purpose: The "main" logic in the server code. This file contains the
+implementation for the Protocol as depicted in Maman 15. Normally,
+this would be separated into multiple files. However, given the requirement
+of passing only the .py files, I figured it would be "easier" to follow
+along via a single file without starting to divide functionality across
+various utility classes and methods.
+In any case, the Protocol Handler has a handle_request method that is
+triggered whenever data is received from the client. The method then
+extracts the relevant data from the request and matches it to the
+appropriate handler (if valid, otherwise will match it to an error handler).
+Each handler in the Protocol is "marked" (wrapped) with its RequestCode,
+thus allowing for easy interpretation, maintenance and addition of new codes.
+"""
+
 import logging
 import os
 import socket

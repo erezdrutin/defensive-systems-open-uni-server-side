@@ -1,9 +1,18 @@
+"""
+Author: Erez Drutin
+Date: 04.11.2023
+Purpose: A file populated with constant values and enums that will be used
+throughout the entire code-base.
+"""
 from enum import Enum
 
 
+# General consts for protocol and file handling:
 SERVER_VERSION = '3'
+FILES_STORAGE_FOLDER = "./storage"
 
 
+# Request / Response Codes definitions:
 class RequestCodes(Enum):
     REGISTRATION = 1025
     SEND_PUBLIC_KEY = 1026
@@ -29,6 +38,7 @@ class ResponseCodes(Enum):
     GENERAL_ERROR = 2107
 
 
+# DB related definitions:
 CLIENTS_TABLE = "clients"
 FILES_TABLE = "files"
 CLIENT_ID_SIZE = 16
@@ -55,5 +65,3 @@ DB_CONFIG = {
         "data_class": "File"
     }
 }
-
-FILES_STORAGE_FOLDER = "./storage"

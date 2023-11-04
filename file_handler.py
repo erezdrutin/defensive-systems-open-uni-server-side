@@ -1,4 +1,11 @@
-import json
+"""
+Author: Erez Drutin
+Date: 04.11.2023
+Purpose: Provide File handling functionality for the rest of the server code.
+This file contains the FileHandler definition, which consists of all of our
+interactions with the FileSystem via the Server.
+"""
+
 import os
 from typing import Any, Union
 
@@ -20,18 +27,6 @@ class FileHandler:
         if directory and not os.path.exists(directory):
             os.makedirs(directory)
 
-    def load_json(self) -> Any:
-        """
-        Load a JSON configuration from the specified file.
-        """
-        try:
-            with open(self.filepath, 'r') as file:
-                data = json.load(file)
-            return data
-        except (FileNotFoundError, OSError, json.JSONDecodeError):
-            print(f"Error: {self.filepath} not found.")
-            return {}
-
     def load_value(self, default_value=None) -> Union[str, None]:
         """
         Load a single value (e.g., port) from the specified file.
@@ -46,19 +41,6 @@ class FileHandler:
                 return default_value
             print(f"Error: {self.filepath} not found.")
             return None
-
-    def write_json(self, data: Any) -> bool:
-        """
-        Write a JSON configuration to the specified file.
-        """
-        try:
-            self._validate_dir()
-            with open(self.filepath, 'w') as file:
-                json.dump(data, file, indent=4)
-            return True
-        except (OSError, TypeError) as e:
-            print(f"Error writing to {self.filepath}: {e}")
-            return False
 
     def write_value(self, value: Any) -> bool:
         """

@@ -1,30 +1,34 @@
+"""
+Author: Erez Drutin
+Date: 04.11.2023
+Purpose: Provide DB handling functionality for the rest of the server code.
+This file contains the DatabaseHandler definition, which consists of all DB
+interactions between the Server and our sqlite database.
+"""
+
 import sqlite3
 from typing import List, Union, Type, Dict, Any
-from const import CLIENTS_TABLE, FILES_TABLE, DB_CONFIG
-import models as models
+import models
 import logging
-# from src.models import Client, File
 
 
 class DatabaseHandler:
-    """
-    Handle interactions with the SQLite database.
-    """
-
     def __init__(self, db_file: str, config: Dict[str, Any],
-                 logger: logging.Logger):
+                 logger: logging.Logger, client_tbl: str, files_tbl: str):
         """
         @param db_file: A path to the file in which the DB is stored.
         @param config: A dict that is expected to be formatted as follows:
         {
             "tbl": {
                 "fetch_init": "Query to extract initial results from",
-                "data_class": "Matching dataclass to table values"
+                "data_class": "Matching dataclass name to table values"
             }
         }
         """
         self.db_file = db_file
         self.config = config
+        self.client_tbl = client_tbl
+        self.files_tbl = files_tbl
         self.logger = logger
 
     def _connect(self):
@@ -83,7 +87,7 @@ class DatabaseHandler:
                               f"'{query}' into the dataclass: "
                               f"'{data_class.__name__}'. Exception: {err}")
 
-    def initialize_table(self) -> Dict:
+    def cache_tables_data(self) -> Dict:
         """
         Expects a config dict and returns a mapping of table-datamodels lists.
         @return: A dictionary populated with tables and a list of datamodels
@@ -115,7 +119,7 @@ class DatabaseHandler:
         @return: A client instantiated dataclass instance.
         """
         results = self.perform_query_to_data_model(
-            query=self.config[CLIENTS_TABLE].get('get_client'),
+            query=self.config[self.client_tbl].get('get_client'),
             data_class=models.Client, name=client_name)
         return None if not len(results) else results[0]
 
@@ -125,7 +129,7 @@ class DatabaseHandler:
         Letting the code "crash" in case of failure.
         @param client: The properties of the client to add.
         """
-        self.perform_query(query=self.config[CLIENTS_TABLE].get(
+        self.perform_query(query=self.config[self.client_tbl].get(
             'add_client'), id=client.id, name=client.name,
             public_key=client.public_key, last_seen=client.last_seen,
             aes_key=client.aes_key)
@@ -137,7 +141,7 @@ class DatabaseHandler:
         @param file: The properties of the file to add.
         """
         try:
-            self.perform_query(query=self.config[FILES_TABLE].get(
+            self.perform_query(query=self.config[self.files_tbl].get(
                 'add_file'), id=file.id, file_name=file.file_name,
                 path_name=file.path_name, verified=file.verified)
         except sqlite3.IntegrityError:
@@ -154,7 +158,7 @@ class DatabaseHandler:
         @param file_name: A file name to update the verified bool for.
         @param verified: A boolean to set in the DB for the received details.
         """
-        self.perform_query(query=self.config[FILES_TABLE].get(
+        self.perform_query(query=self.config[self.files_tbl].get(
             'modify_file_verified'), id=client_id, file_name=file_name,
             verified=1 if verified else 0)
 
@@ -166,7 +170,7 @@ class DatabaseHandler:
         @return: A bytes sequence representing the requested AES key.
         """
         # Selecting the first record from the first row in the results:
-        return self.perform_query(query=self.config[CLIENTS_TABLE].get(
+        return self.perform_query(query=self.config[self.client_tbl].get(
             'get_client_aes'), id=client_id)[0][0]
 
     def update_public_key_and_aes_key(self, client_id: bytes, aes_key: bytes,
@@ -178,7 +182,7 @@ class DatabaseHandler:
         @param aes_key: An aes key to update.
         @param public_key: A public key to update.
         """
-        self.perform_query(query=self.config[CLIENTS_TABLE].get(
+        self.perform_query(query=self.config[self.client_tbl].get(
             'update_public_aes'), id=client_id, public_key=public_key,
             aes_key=aes_key)
 
