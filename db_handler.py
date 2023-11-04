@@ -7,6 +7,7 @@ interactions between the Server and our sqlite database.
 """
 
 import sqlite3
+from datetime import datetime
 from typing import List, Union, Type, Dict, Any
 import models
 import logging
@@ -110,6 +111,15 @@ class DatabaseHandler:
             # Assuming no cached data from the DB in case of failure:
             return {table_name: [] for table_name in self.config.keys()}
 
+    def update_client_last_seen(self, client_id: bytes) -> None:
+        """
+        Updates the last seen value in the DB for the received client id.
+        Letting the code "crash" in case of failure.
+        @param client_id: The id of the client to update.
+        """
+        self.perform_query(query=self.config[self.client_tbl].get(
+            'update_client_last_seen'), id=client_id, last_seen=datetime.now())
+
     def get_client(self, client_name: str) -> Union[models.Client, None]:
         """
         Receives a client name and attempts to fetch it from the DB.
@@ -177,11 +187,11 @@ class DatabaseHandler:
                                       public_key: bytes) -> None:
         """
         Receives a client_id, public key and an aes_key. Updates the public
-        key and the aes key for the received client_id.
+        key and the aes key for the received client_id (+ last seen time).
         @param client_id: A client id to update values for.
         @param aes_key: An aes key to update.
         @param public_key: A public key to update.
         """
         self.perform_query(query=self.config[self.client_tbl].get(
             'update_public_aes'), id=client_id, public_key=public_key,
-            aes_key=aes_key)
+            aes_key=aes_key, last_seen=datetime.now())

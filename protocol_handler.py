@@ -144,7 +144,9 @@ class ProtocolHandler(BaseProtocol):
         # Extracting request details
         client_name = request.payload.decode('utf-8').strip('\x00').strip()
 
+        # Extract client details and update last seen in DB:
         client = self.db_handler.get_client(client_name=client_name)
+        self.db_handler.update_client_last_seen(client_id=client.id)
         if not client or not client.public_key:
             # Username already exists
             response = Response(self.SERVER_VERSION,

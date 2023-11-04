@@ -52,9 +52,10 @@ DB_CONFIG = {
         # :id is a parameter for this query:
         "get_client": f"SELECT * FROM {CLIENTS_TABLE} WHERE name=:name",
         "add_client": f"INSERT INTO {CLIENTS_TABLE} (ID, name, PublicKey, LastSeen, AESKey) VALUES (:id, :name, :public_key, :last_seen, :aes_key)",
+        "update_client_last_seen": f"UPDATE {CLIENTS_TABLE} SET LastSeen=:last_seen WHERE ID=:id",
         "fetch_init": f"SELECT * FROM {CLIENTS_TABLE}",
         "get_client_aes": f"SELECT AESKey FROM {CLIENTS_TABLE} WHERE ID=:id",
-        "update_public_aes": f"UPDATE {CLIENTS_TABLE} SET PublicKey=:public_key, AESKey=:aes_key WHERE ID=:id",
+        "update_public_aes": f"UPDATE {CLIENTS_TABLE} SET PublicKey=:public_key, AESKey=:aes_key, LastSeen=:last_seen WHERE ID=:id",
         "data_class": "Client"
     },
     FILES_TABLE: {
