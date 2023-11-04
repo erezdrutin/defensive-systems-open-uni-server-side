@@ -233,12 +233,13 @@ class ProtocolHandler(BaseProtocol):
                     path_name=os.path.join(FILES_STORAGE_FOLDER,
                                            request.client_id.hex(),
                                            file_name), verified=False)
-        FileHandler(filepath=file.path_name).write_value(decrypted_file)
+        FileHandler(filepath=file.path_name, logger=self.logger).write_value(
+            decrypted_file)
         # This will append the file to DB if user-file doesn't exist yet:
         self.db_handler.add_file(file=file)
 
         # Calculate the CRC checksum for the decrypted file
-        crc_checksum = readfile_crc32(file.path_name)
+        crc_checksum = readfile_crc32(file.path_name, logger=self.logger)
 
         # ClientID - 16 bytes, Content Size - 4 bytes, File Name - 255
         # bytes, CRC Checksum - 4 bytes:

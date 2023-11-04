@@ -5,14 +5,15 @@ Purpose: Provide File handling functionality for the rest of the server code.
 This file contains the FileHandler definition, which consists of all of our
 interactions with the FileSystem via the Server.
 """
-
+import logging
 import os
 from typing import Any, Union
 
 
 class FileHandler:
-    def __init__(self, filepath):
+    def __init__(self, filepath, logger: logging.Logger):
         self.filepath = filepath
+        self.logger = logger
 
     def _validate_dir(self):
         """
@@ -39,7 +40,7 @@ class FileHandler:
         except (FileNotFoundError, OSError):
             if default_value:
                 return default_value
-            print(f"Error: {self.filepath} not found.")
+            self.logger.error(f"Error: {self.filepath} not found.")
             return None
 
     def write_value(self, value: Any) -> bool:
@@ -63,5 +64,5 @@ class FileHandler:
                     file.write(str(value))
             return True
         except OSError as e:
-            print(f"Error writing to {self.filepath}: {e}")
+            self.logger.error(f"Error writing to {self.filepath}: {e}")
             return False

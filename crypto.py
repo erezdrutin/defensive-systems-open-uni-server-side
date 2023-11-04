@@ -6,7 +6,7 @@ python. The constants and routine are cribbed from the POSIX man page. I
 added the method decrypt_aes_cbc for easy parsing and handling of AES
 decryption that we could utilize as we parse the different clients requests.
 """
-
+import logging
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 import binascii
@@ -67,7 +67,12 @@ crctab = [0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc,
 UNSIGNED = lambda n: n & 0xffffffff
 
 
-def memcrc(b):
+def memcrc(b) -> int:
+    """
+    A method provided by the Open University to calculate CRC.
+    @param b: a bytes buffer.
+    @return: An integer representing the crc value.
+    """
     n = len(b)
     i = c = s = 0
     for ch in b:
@@ -81,16 +86,22 @@ def memcrc(b):
     return UNSIGNED(~s)
 
 
-def readfile(fname):
+def readfile(fname, logger: logging.Logger) -> bytes:
+    """
+    A method provided by the Open University to read CRC from file.
+    @param fname: the name of the file.
+    @param logger: a logger to log errors with.
+    @return: A byte sequence representing the files' CRC.
+    """
     try:
         buffer = open(fname, 'rb').read()
         crc_value = memcrc(buffer)
         return crc_value.to_bytes(4, byteorder='little')
     except IOError:
-        print("Unable to open input file", fname)
+        logger.error(f"Unable to open input file: {fname}")
         exit(-1)
     except Exception as err:
-        print("Error processing the file", err)
+        logger.error(f"Error processing the file: {err}")
         exit(-1)
 
 

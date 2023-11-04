@@ -116,7 +116,7 @@ class Server:
         @return: A server instance.
         """
         logger = Server.init_logger()
-        port_config_loader = FileHandler(port_path)
+        port_config_loader = FileHandler(port_path, logger=logger)
         port = int(port_config_loader.load_value(default_value=1357))
 
         # DB initialization & extraction of cached tables data:
